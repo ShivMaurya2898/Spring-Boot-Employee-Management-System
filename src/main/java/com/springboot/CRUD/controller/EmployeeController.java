@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.springboot.CRUD.entity.EmployeeEntity;
 import com.springboot.CRUD.service.EmployeeService;
@@ -27,7 +28,7 @@ public class EmployeeController {
 		 * model.addAttribute("listEmployees", employeeService.getAllEmployees());
 		 * return "index";
 		 */
-		return findPaginated(1, model);
+		return findPaginated(1, "firstName", "asc",	 model);
 	}
 
 	@GetMapping("/shownewEmployeeForm")
@@ -62,16 +63,26 @@ public class EmployeeController {
 		this.employeeService.deleteEmployeeById(id);
 		return "redirect:/";
 	}
+	
+	// /page/1?sortField=name&sortDir=asc
 
 	@GetMapping("/page/{pageNo}")
-	public String findPaginated(@PathVariable(value = "pageNo") int pageNo, Model model) {
+	public String findPaginated(@PathVariable(value = "pageNo") int pageNo,
+			@RequestParam("sortField") String sortField,
+			@RequestParam("sortDir") String sortDir,
+			Model model) {
 		int pageSize = 5;
 
-		Page<EmployeeEntity> page = employeeService.findPaginated(pageNo, pageSize);
+		Page<EmployeeEntity> page = employeeService.findPaginated(pageNo, pageSize, sortField, sortDir);
 		List<EmployeeEntity> listEmployees = page.getContent();
 		model.addAttribute("currentPage", pageNo);
 		model.addAttribute("totalPages", page.getTotalPages());
 		model.addAttribute("totalItems", page.getTotalElements());
+		
+		model.addAttribute("sortField", sortField);
+		model.addAttribute("sortDir", sortDir);
+		model.addAttribute("reverseSortDir", sortDir.equals("asc") ? "desc" : "asc");
+		
 		model.addAttribute("listEmployees", listEmployees);
 		return "index";
 	}

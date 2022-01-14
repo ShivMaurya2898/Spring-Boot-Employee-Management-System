@@ -7,17 +7,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.springboot.CRUD.entity.EmployeeEntity;
 import com.springboot.CRUD.repository.EmployeeRepository;
 
 @Service
-public class EmployeeServiceImpl implements EmployeeService{
+public class EmployeeServiceImpl implements EmployeeService {
 
 	@Autowired
 	private EmployeeRepository employeeRepository;
-		
+
 	@Override
 	public List<EmployeeEntity> getAllEmployees() {
 		return employeeRepository.findAll();
@@ -32,10 +33,9 @@ public class EmployeeServiceImpl implements EmployeeService{
 	public EmployeeEntity getEMployeeById(long id) {
 		Optional<EmployeeEntity> optional = employeeRepository.findById(id);
 		EmployeeEntity employee = null;
-		if(optional.isPresent()) {
+		if (optional.isPresent()) {
 			employee = optional.get();
-		}
-		else {
+		} else {
 			throw new RuntimeException(" Employee Not Found for id :: " + id);
 		}
 		return employee;
@@ -47,8 +47,10 @@ public class EmployeeServiceImpl implements EmployeeService{
 	}
 
 	@Override
-	public Page<EmployeeEntity> findPaginated(int pageNo, int pageSize) {
-		Pageable pageable = PageRequest.of(pageNo - 1, pageSize); 
+	public Page<EmployeeEntity> findPaginated(int pageNo, int pageSize, String sortField, String sortDirection) {
+		Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortField).ascending()
+				: Sort.by(sortField).descending();
+		Pageable pageable = PageRequest.of(pageNo - 1, pageSize, sort);
 		return this.employeeRepository.findAll(pageable);
 	}
 
